@@ -121,24 +121,6 @@ python app.py
 
 The application will start on `http://localhost:5001`
 
-### Production Deployment
-
-For production deployment, consider using:
-
-- **Gunicorn** (Linux/macOS):
-
-```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5001 app:app
-```
-
-- **Waitress** (Cross-platform):
-
-```bash
-pip install waitress
-waitress-serve --host=0.0.0.0 --port=5001 app:app
-```
-
 ## Accessing the Application
 
 1. **Web Interface**: Open your browser and navigate to `http://localhost:5001`
