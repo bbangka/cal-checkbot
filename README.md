@@ -2,15 +2,6 @@
 
 A comprehensive Flask web application that provides a chat interface for managing Cal.com bookings using LangChain and OpenAI's GPT models. This application allows users to book, reschedule, cancel meetings, and check available time slots through a conversational AI interface.
 
-## Features
-
-- 🤖 **AI-Powered Chat Interface**: Natural language booking management using OpenAI GPT models
-- 📅 **Complete Booking Management**: Create, cancel, reschedule, and list bookings
-- 🌍 **Timezone Support**: Full timezone conversion and display
-- 🛠️ **LangChain Integration**: Modular tool-based architecture
-- ✅ **Comprehensive Testing**: 95% test coverage with pytest
-- 🔧 **Environment Configuration**: Secure API key management
-- 📱 **Responsive Web UI**: Clean, modern chat interface
 
 ## Project Structure
 
