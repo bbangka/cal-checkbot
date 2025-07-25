@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cal.com Chatbot</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      #chat-container {
+        width: 90%;
+        max-width: 600px;
+        height: 80vh;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      #chat-box {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column-reverse;
+      }
+      .message-wrapper {
+        display: flex;
+        flex-direction: column;
+      }
+      .message {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 18px;
+        margin-bottom: 10px;
+        line-height: 1.4;
+      }
+      .user {
+        background-color: #007bff;
+        color: white;
+        align-self: flex-end;
+      }
+      .bot {
+        background-color: #e9e9eb;
+        color: #333;
+        align-self: flex-start;
+      }
+      #input-area {
+        display: flex;
+        padding: 15px;
+        border-top: 1px solid #ddd;
+      }
+      #user-input {
+        flex-grow: 1;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        padding: 10px 15px;
+        font-size: 16px;
+        outline: none;
+      }
+      #send-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin-left: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .loader {
+        align-self: flex-start;
+        margin-bottom: 10px;
+      }
+      .loader::after {
+        content: "●";
+        animation: blink 1s infinite steps(1, start);
+      }
+      @keyframes blink {
+        50% {
+          color: transparent;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-container">
+      <div id="chat-box"></div>
+      <form id="input-area" onsubmit="sendMessage(event)">
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Ask me to book or list a meeting..."
+          autocomplete="off"
+        />
+        <button id="send-button" type="submit">➤</button>
+      </form>
+    </div>
+
+    <script>
+      const chatBox = document.getElementById("chat-box");
+      const userInput = document.getElementById("user-input");
+
+      // We'll store the full conversation history here
+      let conversationHistory = [
+        {
+          role: "system",
+          content: `You are a helpful assistant for booking meetings on Cal.com. The current date is ${new Date().toLocaleDateString()}. When a user asks to book a meeting, you MUST ask for their name, email, the desired date and time, and a title for the meeting before calling the create_booking function. Do not assume any details.`,
+        },
+      ];
+
+      function addMessage(sender, text) {
+        const messageWrapper = document.createElement("div");
+        messageWrapper.classList.add("message-wrapper");
+
+        const message = document.createElement("div");
+        message.classList.add("message", sender);
+        message.innerText = text;
+
+        messageWrapper.appendChild(message);
+        chatBox.prepend(messageWrapper); // Prepend to add to the top
+      }
+
+      function showTypingIndicator() {
+        const typingIndicator = document.createElement("div");
+        typingIndicator.classList.add("message", "bot", "loader");
+        chatBox.prepend(typingIndicator);
+        return typingIndicator;
+      }
+
+      async function sendMessage(event) {
+        event.preventDefault();
+        const userText = userInput.value.trim();
+        if (!userText) return;
+
+        addMessage("user", userText);
+        conversationHistory.push({ role: "user", content: userText });
+        userInput.value = "";
+
+        const typingIndicator = showTypingIndicator();
+
+        try {
+          const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: conversationHistory }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server error: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const botReply = data.reply;
+
+          typingIndicator.remove();
+          addMessage("bot", botReply);
+          conversationHistory.push({ role: "assistant", content: botReply });
+        } catch (error) {
+          typingIndicator.remove();
+          addMessage("bot", "Sorry, I hit a snag. Please try again.");
+          console.error("Error:", error);
+        }
+      }
+
+      // Initial bot message
+      addMessage(
+        "bot",
+        "Hello! I can help you book meetings or list your scheduled events on Cal.com. When booking, I'll show you available time slots for your chosen date and timezone. What would you like to do?"
+      );
+    </script>
+  </body>
+</html>
